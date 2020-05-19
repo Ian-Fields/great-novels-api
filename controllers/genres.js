@@ -13,13 +13,13 @@ const getAllGenres = async (request, response) => {
 const getGenreById = async (request, response) => {
   try {
     const { id } = request.params
-    const genre = await models.genres.findOne({
+    const genreMatch = await models.genres.findOne({
       where: { id },
       include: [{ include: [{ model: models.authors }], model: models.novels }],
     })
 
-    return genre
-      ? response.send(genre)
+    return genreMatch
+      ? response.send(genreMatch)
       : response.status(404).send(`Unable to find a genre with a matching id of ${id}`)
   } catch (error) {
     return response.status(500).send('Unable to find the genre, try again')

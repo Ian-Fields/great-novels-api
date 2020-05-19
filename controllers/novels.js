@@ -14,16 +14,25 @@ const getAllNovels = async (request, response) => {
 
 const getNovelById = async (request, response) => {
   try {
-    const { id } = request.params
-
-    const novel = await models.novels.findOne({
-      where: { id },
-      include: [{ model: models.authors }, { model: models.genres }]
+    const { identifier } = request.params
+    const novelMatch = await models.novels.findAll({
+      include: [{
+        model: models.authors,
+      },
+      {
+        model: models.genres,
+      }],
+      where: {
+        [models.Op.or]: [
+          { id: { [models.Op.like]: identifier } },
+          { title: { [models.Op.like]: `%${identifier.toLowerCase()}%` } }
+        ]
+      }
     })
 
-    return novel
-      ? response.send(novel)
-      : response.sendStatus(404).send(`Could not find a novel with a matching id of ${id}`)
+    return novelMatch.length
+      ? response.send(novelMatch)
+      : response.status(404).send(`Unable to find a novel with a matching: ${identifier}`)
   } catch (error) {
     return response.status(500).send('Unable to retrieve the novel, try again')
   }
